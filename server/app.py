@@ -70,18 +70,12 @@ async def process_image(file: UploadFile = File(...)) -> ImageResponse:
         await out_file.write(content)
 
     # Process image using the imported `run_decimer` function
-    try:
-        results = run_decimer(UPLOAD_DIR, RESULTS_FILE)
-        result_entry = next((res for res in results if res[0] == file.filename), None)
-        if not result_entry:
-            raise HTTPException(
-                status_code=500,
-                detail="Processing failed: No result found for the uploaded image"
-            )
-    except Exception as e:
+    results = run_decimer(UPLOAD_DIR, RESULTS_FILE)
+    result_entry = next((res for res in results if res[0] == file.filename), None)
+    if not result_entry:
         raise HTTPException(
             status_code=500,
-            detail=f"An unexpected error occurred: {str(e)}"
+            detail="Processing failed: No result found for the uploaded image"
         )
 
     # Return response
