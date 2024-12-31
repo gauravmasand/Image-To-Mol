@@ -37,6 +37,8 @@ def run_decimer(image_dir: str, output_file: str) -> list:
                 output.write(f"{image_name}\t{smiles}\n")
             print(f"Processed: {image_name}")
     
+    print("The result which we get is this ", results)
+
     return results
 
 

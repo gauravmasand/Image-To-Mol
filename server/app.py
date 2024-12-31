@@ -2,11 +2,11 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from pydantic import BaseModel
-import os
+import os, time
 import aiofiles
 from run_decimer_save_results import run_decimer  # Importing the function
 
-app = FastAPI(title="Image Processing API")
+app = FastAPI(title="Image Processing API", debug=True)
 
 # CORS configuration
 app.add_middleware(
@@ -32,6 +32,7 @@ class ImageResponse(BaseModel):
     message: str
     file_name: str
     status: str
+    similes: str
     result_path: Optional[str] = None
 
 
@@ -63,15 +64,19 @@ async def process_image(file: UploadFile = File(...)) -> ImageResponse:
     # Reset file position
     await file.seek(0)
 
+    # Generate a unique filename with milliseconds
+    timestamp = int(time.time() * 1000)  # Current time in milliseconds
+    file_name_with_timestamp = f"{timestamp}_{file.filename}"
+
     # Save uploaded file
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    file_path = os.path.join(UPLOAD_DIR, file_name_with_timestamp)
     async with aiofiles.open(file_path, 'wb') as out_file:
         content = await file.read()
         await out_file.write(content)
 
     # Process image using the imported `run_decimer` function
     results = run_decimer(UPLOAD_DIR, RESULTS_FILE)
-    result_entry = next((res for res in results if res[0] == file.filename), None)
+    result_entry = next((res for res in results if res[0] == file_name_with_timestamp), None)
     if not result_entry:
         raise HTTPException(
             status_code=500,
@@ -81,12 +86,19 @@ async def process_image(file: UploadFile = File(...)) -> ImageResponse:
     # Return response
     return ImageResponse(
         message="Image processed successfully",
-        file_name=file.filename,
+        file_name=file_name_with_timestamp,
         status="success",
-        result_path=RESULTS_FILE
+        result_path=RESULTS_FILE,
+        similes=result_entry[1]  # Corrected to use the matched result entry
     )
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8089, reload=True)
+    uvicorn.run(
+        "app:app",
+        host="0.0.0.0",
+        port=8089,
+        reload=True,
+        log_level="debug"  # Set log level to debug for detailed logs
+    )
