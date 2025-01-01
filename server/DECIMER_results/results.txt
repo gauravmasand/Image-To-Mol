@@ -1,3 +1,0 @@
-1735676037361_Image.jpg	C(C1[C@@H](COC[C@@H]2C(C([C@H](C(CO)O2)O)O)O)[C@H](C([C@H](O)O1)O)O)O
-1735676926553_Image.jpg	C(C1[C@@H](COC[C@@H]2C(C([C@H](C(CO)O2)O)O)O)[C@H](C([C@H](O)O1)O)O)O
-1735676037361_Image.jpg	C(C1[C@@H](COC[C@@H]2C(C([C@H](C(CO)O2)O)O)O)[C@H](C([C@H](O)O1)O)O)O

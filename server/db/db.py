@@ -1,4 +1,6 @@
+from fastapi import HTTPException
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 # MongoDB Connection String
 MONGO_URI = "mongodb+srv://gauravmasand99:xNcZdKhJ9GgG2424@gauravmasand99.2qqkl.mongodb.net/?retryWrites=true&w=majority&appName=GauravMasand99"
@@ -35,3 +37,24 @@ class DB:
         collection = db[collection_name]
         result = collection.insert_one(data)
         return str(result.inserted_id)
+    
+    @staticmethod
+    def fetch_document_by_id(document_id: str):
+        """
+        Fetch a document from the MongoDB collection by its ID.
+
+        Args:
+            document_id (str): The ID of the document to fetch.
+
+        Returns:
+            dict: The document data.
+        """
+
+        collection_name = "ImageToMolConversations"
+        db = DB.connect_db()
+        collection = db[collection_name]
+        document = collection.find_one({"_id": ObjectId(document_id)})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        document["_id"] = str(document["_id"])  # Convert ObjectId to string
+        return document

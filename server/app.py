@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import os, time
 from datetime import datetime
@@ -38,8 +39,7 @@ class ImageResponse(BaseModel):
     file_name: str
     status: str
     similes: str
-    result_path: Optional[str] = None,
-    resultsURL: Optional[str] = None
+    resultsID: Optional[str] = None
     
 
 @app.get("/")
@@ -96,8 +96,8 @@ async def process_image(file: UploadFile = File(...)) -> ImageResponse:
 
     data = {
         "start_time": startTime,
-        "image_paths": ["users_images_uploaded/image1.png"],
-        "results": ["SMILES1"],
+        "image_paths": [file_path],
+        "results": [result_entry[1]],
         "request_completion_time": endTime,
     }
     
@@ -108,11 +108,35 @@ async def process_image(file: UploadFile = File(...)) -> ImageResponse:
         message="Image processed successfully",
         file_name=file_name_with_timestamp,
         status="success",
-        result_path=RESULTS_FILE,
         similes=result_entry[1],  # Corrected to use the matched result entry
-        resultsURL=document_id
+        resultsID=document_id
     )
 
+
+@app.get("/users_images_uploaded/{file_name}")
+async def get_uploaded_file(file_name: str):
+    """
+    Endpoint to serve files from the 'users_images_uploaded' directory.
+    """
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
+
+@app.get("/api/v1/get-results/{document_id}")
+async def get_uploaded_file(document_id: str):
+    """
+    Fetch results from the database using the document ID.
+    """
+    document = DB.fetch_document_by_id(document_id)
+   
+    # Convert datetime objects to strings
+    for key in ["start_time", "request_completion_time"]:
+        if key in document and isinstance(document[key], datetime):
+            document[key] = document[key].isoformat()
+    
+    return JSONResponse(content=document)
 
 if __name__ == "__main__":
     import uvicorn
