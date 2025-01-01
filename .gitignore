@@ -31,6 +31,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 server/test_images
+server/users_images_uploaded
 server/DECIMER_results/results.txt
 
 # PyInstaller

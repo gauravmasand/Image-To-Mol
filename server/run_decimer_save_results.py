@@ -4,9 +4,6 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from DECIMER import predict_SMILES
-from db.operations import add_processing_request  # Importing DB operation
-
-from DECIMER import predict_SMILES
 
 def run_decimer(image_dir: str, output_file: str) -> list:
     """
@@ -26,7 +23,7 @@ def run_decimer(image_dir: str, output_file: str) -> list:
     if os.path.exists(output_file):
         with open(output_file, "r") as output:
             lines = output.readlines()
-            already_processed = [line.split("\t")[0] for line in lines]
+            already_processed = [line.split(",")[0] for line in lines]
 
     for image_name in os.listdir(image_dir):
         if image_name not in already_processed:
